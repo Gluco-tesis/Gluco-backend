@@ -11,3 +11,8 @@ class User(BaseModel):
     name: str
     email: str
     password: str
+    key: Optional[str]
+
+class UserLogin(BaseModel):
+    email: str
+    password: str

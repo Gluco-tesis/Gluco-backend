@@ -4,6 +4,7 @@ de las tablas para el manejo de los datos.
 """
 
 from datetime import datetime
+import string
 from sqlalchemy import Table, Column, engine
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Integer, String, TIMESTAMP, DECIMAL, FLOAT
@@ -13,7 +14,8 @@ users = Table("usuarios", meta,
     Column("id", Integer, primary_key=True),
     Column("name", String(100)),
     Column("email", String(100)),
-    Column("password", String(100))
+    Column("password", String(100)),
+    Column("key", String(100))
 )
 
 measures = Table("medidas", meta, 
