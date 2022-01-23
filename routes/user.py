@@ -55,8 +55,6 @@ def login(user_login: UserLogin):
         user_key = row.key.encode()
         f_user = Fernet(user_key)
         passwd = f_user.decrypt(row.password.encode("utf-8")).decode()
-        print(passwd)
-        print(user_login.password)
         if(row.email == user_login.email and passwd == user_login.password):
             payload_data = {
                 "id": row.id,
