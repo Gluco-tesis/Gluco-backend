@@ -23,3 +23,7 @@ class UserEdit(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+
+class UserForgotPassword(BaseModel):
+    email: str

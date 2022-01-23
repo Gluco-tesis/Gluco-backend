@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Response, responses, status
+from fastapi import APIRouter, Response, status
 from starlette.responses import Response
 from config.db import conn
-from models.user import users
-from schemas.user import UserCreate, UserEdit, UserLogin
-from starlette.status import HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED
+from models.user import users, codes
+from schemas.user import UserCreate, UserEdit, UserLogin, UserForgotPassword
+from starlette.status import HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 from cryptography.fernet import Fernet
-import jwt
+from datetime import datetime, timedelta
+from utils import emaillUtil
+import jwt, uuid
 
 key = Fernet.generate_key()
 f = Fernet(key)
@@ -78,3 +80,37 @@ def login(user_login: UserLogin):
             }
     
     return Response(status_code=HTTP_401_UNAUTHORIZED)
+
+@user.post("/user/forgot-password/", tags=["users"])
+async def forgot_password(request: UserForgotPassword):
+    # Check user existed
+    result = conn.execute(users.select().where(users.c.email == request.email)).first()
+    if not result:
+        return Response(status_code=HTTP_404_NOT_FOUND)
+
+    # Create rest code and save in DB
+    reset_code = str(uuid.uuid1())
+    now = datetime.now() + timedelta(days=1)
+    new_code = {
+        "email" : request.email,
+        "rest_code" : reset_code,
+        "status" : "1",
+        "expired_in" : now
+    }
+
+    conn.execute(codes.insert().values(new_code))
+
+    # Sending Email
+    subject = "GLUCO - Cambio de contraseña"
+    recipient = [request.email]
+    message = {} 
+    message["email"] = request.email
+    message["reset_code"] = reset_code
+
+    await emaillUtil.send_email(subject, recipient, message)
+
+    return {
+        "reset_code": reset_code,
+        "code" : 200,
+        "message": "Le enviamos un mail con las instrucciones para cambiar su contraseña."
+    }
