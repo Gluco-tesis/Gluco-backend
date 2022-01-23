@@ -58,8 +58,10 @@ def login(user_login: UserLogin):
         if(row.email == user_login.email and passwd == user_login.password):
             payload_data = {
                 "id": row.id,
-                "username" : row.name,
+                "name" : row.name,
+                "lastname" : row.lastname,
                 "email": row.email,
+                "phone": row.phone,
             }
 
             token = jwt.encode(
@@ -68,8 +70,10 @@ def login(user_login: UserLogin):
             )
 
             return {
-                "username" : row.name,
+                "name" : row.name,
+                "lastname" : row.lastname,
                 "email": row.email,
+                "phone": row.phone,
                 "token": token
             }
     
