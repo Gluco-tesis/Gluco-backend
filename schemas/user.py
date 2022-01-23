@@ -6,12 +6,19 @@ de usuarios
 from typing import Optional
 from pydantic import BaseModel
 
-class User(BaseModel):
+class UserCreate(BaseModel):
     id: Optional[int]
     name: str
+    lastname: str
     email: str
     password: str
-    key: Optional[str]
+    phone: str
+
+class UserEdit(BaseModel):
+    name: str
+    lastname: str
+    password: str
+    phone: str
 
 class UserLogin(BaseModel):
     email: str
