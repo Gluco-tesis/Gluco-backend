@@ -13,8 +13,10 @@ from config.db import meta, engine
 users = Table("usuarios", meta,
     Column("id", Integer, primary_key=True),
     Column("name", String(100)),
+    Column("lastname", String(100)),
     Column("email", String(100)),
     Column("password", String(100)),
+    Column("phone", String(100)),
     Column("key", String(100))
 )
 
