@@ -44,8 +44,11 @@ def inferences(json_nir, cantidad_mediciones):
     }
 
     
-@measure.get("/measure/medir", tags=["measures"])
-async def medir_nir():
+@measure.get("/measure/medir/({id}", tags=["measures"])
+async def medir_nir(id:int):
+    """Realiza la medicion de glucosa llamando al endpoint en arduino y devulve el nivel de glucosa
+    Pide el id del usuario a medir
+    """
     cantidad_mediciones = 7
     json_nir = await request()
     promedios = inferences(json_nir, cantidad_mediciones)
@@ -53,6 +56,11 @@ async def medir_nir():
 
 @measure.post("/measure/search", response_model=list[Measure], tags=["measures"])
 def search_measures(measure_user_search: MeasureUserSearch):
+    """Realiza la busqueda de las mediciones de un usuario enviando los datos ej:
+            userId: int
+            date: 2022-01-29
+        Devuelve el listado con todas las mediciones para ese usuario
+    """
     result = conn.execute(measures.select()).fetchall()
     dateFormat = "%Y-%m-%d"
 
@@ -70,6 +78,11 @@ def search_measures(measure_user_search: MeasureUserSearch):
 
 @measure.post("/measure/list", response_model=list[Measure], tags=["measures"])
 def list_measure(measure_list: MeasureUserList):
+    """Realiza la busqueda de las n ultimas mediciones de un usuario enviando los datos ej:
+            userId: int
+            count: 10
+        Devuelve un listado con esas mediciones
+    """
     result = conn.execute(measures.select()).fetchall()
     n = measure_list.count
     measure_users = list(
