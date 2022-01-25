@@ -73,6 +73,7 @@ def login(user_login: UserLogin):
         email: str
         password: str
     """
+    print(user_login)
     result = conn.execute(users.select()).fetchall()
     for row in result:
         user_key = row.key.encode()
@@ -93,6 +94,7 @@ def login(user_login: UserLogin):
             )
 
             return {
+                "id": row.id,
                 "name" : row.name,
                 "lastname" : row.lastname,
                 "email": row.email,
