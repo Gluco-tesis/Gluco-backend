@@ -22,7 +22,7 @@ users = Table("usuarios", meta,
 measures = Table("medidas", meta, 
     Column("id", Integer, primary_key=True),
     Column("measurement", DECIMAL(10.0)),
-    Column("date", TIMESTAMP),
+    Column("measure_date", TIMESTAMP),
     Column("user_id", Integer, ForeignKey("usuarios.id"))
 )
 
