@@ -87,7 +87,7 @@ coefW = calc_glucosa_canal(x,yw,round(promedios["promW"], 2))["R"]
 
 PromedioPond = (glucoseR * coefR + glucoseS * coefS + glucoseT * coefT + glucoseU * coefU + glucoseV * coefV + glucoseW * coefW) / (coefR + coefS + coefT +coefU + coefV + coefW)
 
-print("Promedio ponderado: ", PromedioPond)
+print("Promedio ponderado: ", round(PromedioPond, 2))
 
 print(calc_glucosa_canal(x,yr,round(promedios["promR"], 2)))
 print(calc_glucosa_canal(x,ys,round(promedios["promS"], 2)))
