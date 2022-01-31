@@ -22,20 +22,20 @@ users = Table("usuarios", meta,
 
 measures = Table("medidas", meta, 
     Column("id", Integer, primary_key=True),
-    Column("measurement", DECIMAL(10.0)),
+    Column("measurement", DECIMAL(10,2)),
     Column("measure_date", TIMESTAMP),
     Column("user_id", Integer, ForeignKey("usuarios.id"))
 )
 
 inferences = Table("inferencias", meta, 
     Column("id", Integer, primary_key=True),
-    Column("R", FLOAT),
-    Column("S", FLOAT),
-    Column("T", FLOAT),
-    Column("U", FLOAT),
-    Column("V", FLOAT),
-    Column("W", FLOAT),
-    Column("measurement", DECIMAL(10.0))
+    Column("R", DECIMAL(10,5)),
+    Column("S", DECIMAL(10,5)),
+    Column("T", DECIMAL(10,5)),
+    Column("U", DECIMAL(10,5)),
+    Column("V", DECIMAL(10,5)),
+    Column("W", DECIMAL(10,5)),
+    Column("measurement", DECIMAL(10,2))
 )
 
 meta.create_all(engine)
