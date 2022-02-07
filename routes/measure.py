@@ -1,7 +1,5 @@
 from decimal import Decimal
-from unittest import result
-from fastapi import APIRouter, Response, responses, status
-from starlette.responses import Response
+from fastapi import APIRouter
 from config.db import conn
 from models.user import measures, inferences
 from schemas.measure import Measure, MeasureUserSearch, MeasureUserList
@@ -11,6 +9,7 @@ import numpy as np
 from decimal import Decimal
 
 measure = APIRouter()
+time_format = "%H:%M:%S"
 
 URL = "http://192.168.100.42/medir"
 
@@ -143,7 +142,7 @@ async def medir_nir(user_id:int):
 
     return response
 
-@measure.post("/measure/search", response_model=list[Measure], tags=["measures"])
+@measure.post("/measure/search", tags=["measures"])
 def search_measures(measure_user_search: MeasureUserSearch):
     """Realiza la busqueda de las mediciones de un usuario enviando los datos ej:
             userId: int
@@ -151,21 +150,33 @@ def search_measures(measure_user_search: MeasureUserSearch):
         Devuelve el listado con todas las mediciones para ese usuario
     """
     result = conn.execute(measures.select()).fetchall()
-    dateFormat = "%Y-%m-%d"
+    date_format = "%Y-%m-%d"
 
     measure_users = list(
         filter(
             lambda measure: 
             int(measure[3]) == int(measure_user_search.userId)  and
-            str(measure[2].strftime(dateFormat)) == str(measure_user_search.date), 
+            str(measure[2].strftime(date_format)) == str(measure_user_search.date), 
             result
+        )
+    )
+
+    measure_users = list(
+        map(
+            lambda measure:
+            { 
+                "id": measure['id'], 
+                "measurement": measure['measurement'], 
+                "measure_date": measure['measure_date'].strftime(time_format),
+            },
+            measure_users
         )
     )
 
     return measure_users
 
 
-@measure.post("/measure/list", response_model=list[Measure], tags=["measures"])
+@measure.post("/measure/list", tags=["measures"])
 def list_measure(measure_list: MeasureUserList):
     """Realiza la busqueda de las n ultimas mediciones de un usuario enviando los datos ej:
             userId: int
@@ -179,6 +190,18 @@ def list_measure(measure_list: MeasureUserList):
             lambda measure: 
             int(measure[3]) == int(measure_list.userId),
             result
+        )
+    )
+
+    measure_users = list(
+        map(
+            lambda measure:
+            { 
+                "id": measure['id'], 
+                "measurement": measure['measurement'], 
+                "measure_date": measure['measure_date'].strftime(time_format),
+            },
+            measure_users
         )
     )
 

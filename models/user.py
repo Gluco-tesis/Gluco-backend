@@ -3,11 +3,9 @@ Este archvio contiene los modelos que son las representaciones que usa fastAPI
 de las tablas para el manejo de los datos.
 """
 
-from datetime import datetime
-import string
 from sqlalchemy import Table, Column, engine
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import Integer, String, TIMESTAMP, DECIMAL, FLOAT
+from sqlalchemy.sql.sqltypes import Integer, String, TIMESTAMP, DECIMAL
 from config.db import meta, engine
 
 users = Table("usuarios", meta,
