@@ -199,7 +199,8 @@ def list_measure(measure_list: MeasureUserList):
             { 
                 "id": measure['id'], 
                 "measurement": measure['measurement'], 
-                "measure_date": measure['measure_date'].strftime(time_format),
+                "measure_date": measure['measure_date'],
+                "measure_time": measure['measure_date'].strftime(time_format),
             },
             measure_users
         )
