@@ -79,7 +79,7 @@ def get_estadistic_values(x,y, prom_canal):
     return values
 
 @measure.get("/measure/{user_id}", tags=["measures"])
-async def medir_nir(user_id:int):
+async def nir_measure(user_id:int):
     """Realiza la medicion de glucosa llamando al endpoint en arduino y devulve el nivel de glucosa
     Pide el id del usuario a medir
     """
