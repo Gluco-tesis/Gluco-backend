@@ -175,10 +175,8 @@ def search_measures(measure_user_search: MeasureUserSearch):
         )
     )
 
-    return JSONResponse(
-        measure_users,
-        status_code=200
-    )
+    return measure_users,
+
 
 @measure.post("/measure/list", tags=["measures"])
 def list_measure(measure_list: MeasureUserList):
