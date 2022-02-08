@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Response, status
-from starlette.responses import Response
+from starlette.responses import Response, JSONResponse
 from config.db import conn
 from models.user import users, codes
 from schemas.user import UserCreate, UserEdit, UserLogin, UserForgotPassword, UserChangePassword
@@ -105,12 +105,15 @@ def login(user_login: UserLogin):
             }
     return Response(status_code=HTTP_401_UNAUTHORIZED)
 
-@user.post("/user/forgot-password/", tags=["users"])
+@user.post("/user/forgot-password", tags=["users"])
 async def forgot_password(request: UserForgotPassword):
     # Check user existed
     result = conn.execute(users.select().where(users.c.email == request.email)).first()
     if not result:
-        return Response(status_code=HTTP_404_NOT_FOUND)
+        return JSONResponse(
+            {"message" : "Email no encontrado. Su email no esta registrado en nuestros usuarios"}, 
+            status_code=HTTP_404_NOT_FOUND
+        )
 
     # Create rest code and save in DB
     reset_code = random.randint(10000,99999)
@@ -133,17 +136,19 @@ async def forgot_password(request: UserForgotPassword):
 
     await emaillUtil.send_email(subject, recipient, message)
 
-    return {
-        "code" : 200,
-        "message": "Le enviamos un mail con las instrucciones para cambiar su contraseña."
-    }
+    return JSONResponse(
+        {"message": "Le enviamos un mail con las instrucciones para cambiar su contraseña."},
+        status_code=200
+    )
 
-@user.post("/user/change-password/", tags=["users"])
+@user.post("/user/change-password", tags=["users"])
 def change_password(request: UserChangePassword):
     # Busco al usuario por su mail
     find_user = conn.execute(users.select().where(users.c.email == request.email)).first()
     if not find_user:
-        return Response(status_code=HTTP_404_NOT_FOUND)
+        return JSONResponse(
+            {"message" : "Email no encontrado. Su email no esta registrado en nuestros usuarios"}, 
+            status_code=HTTP_404_NOT_FOUND)
 
     # Busco el codigo por user_id, por reset_code, por estado = 1 y por fecha de expiracion
 
@@ -159,7 +164,10 @@ def change_password(request: UserChangePassword):
     ).first()
 
     if not find_code:
-        return Response(status_code=HTTP_404_NOT_FOUND)
+        return JSONResponse(
+            {"message" : "Codigo Invalido. Se ingreso un codigo erroreno o su codigo expiro"}, 
+            status_code=HTTP_404_NOT_FOUND
+        )
     
     # Cambiar la password
     user_key = find_user.key.encode()
@@ -173,7 +181,7 @@ def change_password(request: UserChangePassword):
         status = 0
     ).where(codes.c.id == find_code.id ))
 
-    return {
-        "code" : 200,
-        "message": "La contraseña se cambio con éxito"
-    }
+    return JSONResponse(
+        {"message": "La contraseña se cambio con éxito."},
+        status_code=200
+    )
