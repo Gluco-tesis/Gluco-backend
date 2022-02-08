@@ -2,7 +2,8 @@ from fastapi import APIRouter, Response, status
 from starlette.responses import Response, JSONResponse
 from config.db import conn
 from models.user import users, codes
-from schemas.user import UserCreate, UserEdit, UserLogin, UserForgotPassword, UserChangePassword
+from schemas.user import UserCreate, UserEdit, UserLogin, UserDelete, UserForgotPassword, UserChangePassword, UserLoginResponse
+from schemas.message import MessageResponse
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
 from cryptography.fernet import Fernet
 from datetime import datetime, timedelta
@@ -22,13 +23,16 @@ def get_users():
 
 @user.post("/users", response_model=UserCreate, tags=["users"])
 def create_user(user: UserCreate):
-    """ Crea Un nuevo Usuario en la base de datos pide como modelo:
-        name: str
-        lastname: str
-        email: str
-        password: str
-        phone: str
-    """
+    """ Crea Un nuevo Usuario en la base de datos pide como modelo: UserCreate """
+    exist_user = conn.execute(users.select().where(users.c.email == user.email)).first()
+
+    # Si existe el email no lo creo
+    if exist_user:
+        return JSONResponse(
+            { "message": "El mail con el que intenta crear este usuario ya exite porfavor seleccione otro" },
+            status_code=404
+        )
+
     new_user = {"name": user.name, "lastname": user.lastname, "email":user.email, "phone": user.phone}
     new_user["password"] = f.encrypt(user.password.encode("utf-8"))
     new_user["key"] = key.decode()
@@ -42,21 +46,23 @@ def get_user(id:int):
     return result
 
 @user.delete("/users/{id}", status_code=status.HTTP_204_NO_CONTENT, tags=["users"])
-def delete_user(id:int):
-    """ Elimina los datos de un usuario en particular pasandole su id"""
-    # TODO: check password
-    conn.execute(users.delete().where(users.c.id == id))
+def delete_user(id:int, user:UserDelete):
+    """ Elimina un usuario en particular pasandole su id y su contraseña"""
+    conn.execute(
+        users.delete().where(
+            and_(
+                users.c.id == id,
+                users.c.password == user.password
+            )
+        )
+    )
+
     return Response(status_code=HTTP_204_NO_CONTENT)
 
 @user.put("/users/{id}", response_model=UserEdit, tags=["users"])
 def uptade_user(id:int, user: UserEdit):
-    """ Edita los datos de un usuario en particular es necesario pasarle 
-    la id en la url y enviar el modelo: 
-        name: str
-        lastname: str
-        password: str
-        phone: str
-    """
+    """ Edita los datos de un usuario en particular, es necesario pasarle 
+    la id en la url y enviar el modelo: UserEdit """
     result = conn.execute(users.select().where(users.c.id == id)).first()
     user_key = result.key.encode()
     f_user = Fernet(user_key)
@@ -68,14 +74,10 @@ def uptade_user(id:int, user: UserEdit):
     ).where(users.c.id == id))
     return conn.execute(users.select().where(users.c.id == id)).first()
 
-@user.post("/users/login", tags=["users"])
+@user.post("/users/login", response_model=UserLoginResponse, tags=["users"])
 def login(user_login: UserLogin):
-    """Permite a un usuario logearse a la aplicacion devolviendo sus datos
-    Pide el moelo:
-        email: str
-        password: str
-    """
-    print(user_login)
+    """Permite a un usuario logearse a la aplicacion devolviendo 
+    sus datos Pide el moelo: UserLogin"""
     result = conn.execute(users.select()).fetchall()
     for row in result:
         user_key = row.key.encode()
@@ -95,18 +97,18 @@ def login(user_login: UserLogin):
                 key = "hola123"
             )
 
-            return {
-                "id": row.id,
-                "name" : row.name,
-                "lastname" : row.lastname,
-                "email": row.email,
-                "phone": row.phone,
-                "token": token
-            }
+            payload_data["token"] = token
+
+            return JSONResponse(
+                payload_data,
+                status_code=200
+            )
     return Response(status_code=HTTP_401_UNAUTHORIZED)
 
-@user.post("/user/forgot-password", tags=["users"])
+@user.post("/user/forgot-password", response_model=MessageResponse, tags=["users"])
 async def forgot_password(request: UserForgotPassword):
+    """ Sirve para generar codigo de recuperacion de contraseña 
+    enviando el email y devolviendo un message"""
     # Check user existed
     result = conn.execute(users.select().where(users.c.email == request.email)).first()
     if not result:
@@ -141,8 +143,10 @@ async def forgot_password(request: UserForgotPassword):
         status_code=200
     )
 
-@user.post("/user/change-password", tags=["users"])
+@user.post("/user/change-password", response_model=MessageResponse, tags=["users"])
 def change_password(request: UserChangePassword):
+    """ Sirve para cambiar la contraseña enviando los datos del 
+    modelo: UserChangePassword devuelve un mensaje indicando si se cambio """
     # Busco al usuario por su mail
     find_user = conn.execute(users.select().where(users.c.email == request.email)).first()
     if not find_user:

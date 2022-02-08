@@ -2,7 +2,8 @@ from decimal import Decimal
 from fastapi import APIRouter
 from config.db import conn
 from models.user import measures, inferences
-from schemas.measure import MeasureUserSearch, MeasureUserList
+from schemas.measure import MeasureUserSearch, MeasureUserList, Measure
+from starlette.responses import JSONResponse
 from datetime import datetime
 import httpx
 import numpy as np
@@ -78,7 +79,7 @@ def get_estadistic_values(x,y, prom_canal):
     }
     return values
 
-@measure.get("/measure/{user_id}", tags=["measures"])
+@measure.get("/measure/{user_id}", response_model=Measure, tags=["measures"])
 async def nir_measure(user_id:int):
     """Realiza la medicion de glucosa llamando al endpoint en arduino y devulve el nivel de glucosa
     Pide el id del usuario a medir
@@ -140,14 +141,15 @@ async def nir_measure(user_id:int):
 
     response = { "glucoseCal" :  weighted_avg }
 
-    return response
+    return JSONResponse(
+        response,
+        status_code=200
+    )
 
 @measure.post("/measure/search", tags=["measures"])
 def search_measures(measure_user_search: MeasureUserSearch):
-    """Realiza la busqueda de las mediciones de un usuario enviando los datos ej:
-            userId: int
-            date: 2022-01-29
-        Devuelve el listado con todas las mediciones para ese usuario
+    """Realiza la busqueda de las mediciones de un usuario enviando los datos del 
+    modelo: MeasureUserSearch Devuelve el listado con todas las mediciones para ese usuario
     """
     result = conn.execute(measures.select()).fetchall()
     date_format = "%Y-%m-%d"
@@ -173,14 +175,15 @@ def search_measures(measure_user_search: MeasureUserSearch):
         )
     )
 
-    return measure_users
+    return JSONResponse(
+        measure_users,
+        status_code=200
+    )
 
 @measure.post("/measure/list", tags=["measures"])
 def list_measure(measure_list: MeasureUserList):
-    """Realiza la busqueda de las n ultimas mediciones de un usuario enviando los datos ej:
-            userId: int
-            count: 10
-        Devuelve un listado con esas mediciones
+    """Realiza la busqueda de las n ultimas mediciones de un usuario 
+    enviando los datos del modelo: MeasureUserList  Devuelve un listado con esas mediciones
     """
     result = conn.execute(measures.select()).fetchall()
     n = measure_list.count

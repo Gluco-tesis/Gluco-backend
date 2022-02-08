@@ -1,6 +1,5 @@
 """
-Clases para mapear las definiciones de los JSON que llegan en las petciones POST
-de usuarios
+Clases para mapear las definiciones de los JSON que llegan en las petcione de usuarios
 """
 
 from typing import Optional
@@ -24,6 +23,8 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class UserDelete(BaseModel):
+    password: str
 
 class UserForgotPassword(BaseModel):
     email: str
@@ -32,3 +33,11 @@ class UserChangePassword(BaseModel):
     email: str
     reset_code: int
     new_password: str 
+
+class UserLoginResponse(BaseModel):
+    id: int
+    name : str
+    lastname : str
+    email: str
+    phone: str
+    token: str

@@ -1,19 +1,13 @@
 """
-Clases para mapear las definiciones de los JSON que llegan en las petciones POST
-de usuarios
+Clases para mapear las definiciones de los JSON que llegan en las petciones de medidas
 """
 
 import datetime
 from decimal import Decimal
-from typing import Optional
 from pydantic import BaseModel
 
 class Measure(BaseModel):
-    id: Optional[int]
-    measurement: Decimal
-    measure_date: datetime.datetime
-    user_id: int
-
+    glucoseCal: Decimal
 
 class MeasureUserSearch(BaseModel):
     userId: int
