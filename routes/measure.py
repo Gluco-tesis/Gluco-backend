@@ -175,7 +175,7 @@ def search_measures(measure_user_search: MeasureUserSearch):
         )
     )
 
-    return measure_users,
+    return measure_users
 
 
 @measure.post("/measure/list", tags=["measures"])
