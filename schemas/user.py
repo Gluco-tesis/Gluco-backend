@@ -27,3 +27,8 @@ class UserLogin(BaseModel):
 
 class UserForgotPassword(BaseModel):
     email: str
+
+class UserChangePassword(BaseModel):
+    email: str
+    reset_code: int
+    new_password: str 

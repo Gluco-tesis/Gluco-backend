@@ -2,7 +2,7 @@ from decimal import Decimal
 from fastapi import APIRouter
 from config.db import conn
 from models.user import measures, inferences
-from schemas.measure import Measure, MeasureUserSearch, MeasureUserList
+from schemas.measure import MeasureUserSearch, MeasureUserList
 from datetime import datetime
 import httpx
 import numpy as np
@@ -174,7 +174,6 @@ def search_measures(measure_user_search: MeasureUserSearch):
     )
 
     return measure_users
-
 
 @measure.post("/measure/list", tags=["measures"])
 def list_measure(measure_list: MeasureUserList):

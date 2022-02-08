@@ -38,8 +38,8 @@ inferences = Table("inferencias", meta,
 
 codes = Table("codes", meta,
     Column("id", Integer, primary_key=True),
-    Column("email", String(100)),
-    Column("rest_code", String(50)),
+    Column("user_id", Integer, ForeignKey("usuarios.id")),
+    Column("rest_code", Integer),
     Column("status", String(1)),
     Column("expired_in", TIMESTAMP)
 )
