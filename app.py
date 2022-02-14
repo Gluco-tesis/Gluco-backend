@@ -9,8 +9,13 @@ app = FastAPI(
     version="1.0.1",
     openapi_tags=[{
         "name": "users",
-        "description": "Rutas de usuarios"
-    }]
+        "description": "User Routes"
+    },
+    {
+        "name": "measures",
+        "description": "measures Routes"
+    },
+    ]
 )
 
 
