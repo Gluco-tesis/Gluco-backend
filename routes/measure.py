@@ -88,6 +88,8 @@ async def nir_measure(user_id:int):
     json_nir = await request()
     sensor_avg = calc_inferences(json_nir, cantidad_mediciones)
 
+    print("primedios: ", sensor_avg)
+
     result = conn.execute(inferences.select().order_by(inferences.c.measurement)).fetchall()
 
     channel_r = [round(x[1],2) for x in result]
