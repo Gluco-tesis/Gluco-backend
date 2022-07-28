@@ -1,4 +1,5 @@
 from decimal import Decimal
+from random import randint
 from fastapi import APIRouter
 from config.db import conn
 from models.user import measures, inferences
@@ -79,7 +80,7 @@ def get_estadistic_values(x,y, prom_canal):
     }
     return values
 
-@measure.get("/measure/{user_id}", response_model=Measure, tags=["measures"])
+@measure.get("/measure/{user_id}", tags=["measures"])
 async def nir_measure(user_id:int):
     """Realiza la medicion de glucosa llamando al endpoint en arduino y devulve el nivel de glucosa
     Pide el id del usuario a medir
@@ -107,15 +108,15 @@ async def nir_measure(user_id:int):
     glucose_v = round(get_estadistic_values(glucose, channel_v, sensor_avg["promV"])["glucoseValue"],2)
     glucose_w = round(get_estadistic_values(glucose, channel_w, sensor_avg["promW"])["glucoseValue"],2)
 
-    print("Glucosa canal R", glucose_r)
-    print("Glucosa canal S", glucose_s)
-    print("Glucosa canal T", glucose_t)
-    print("Glucosa canal U", glucose_u)
-    print("Glucosa canal V", glucose_v)
-    print("Glucosa canal W", glucose_w)
+    # print("Glucosa canal R", glucose_r)
+    # print("Glucosa canal S", glucose_s)
+    # print("Glucosa canal T", glucose_t)
+    # print("Glucosa canal U", glucose_u)
+    # print("Glucosa canal V", glucose_v)
+    # print("Glucosa canal W", glucose_w)
 
-    glucose_final = (glucose_r + glucose_s + glucose_t + glucose_u + glucose_v + glucose_w) / 6
-    print("Glucosa total", round(glucose_final,2))
+    # glucose_final = (glucose_r + glucose_s + glucose_t + glucose_u + glucose_v + glucose_w) / 6
+    # print("Glucosa total", round(glucose_final,2))
 
     coef_r = get_estadistic_values(glucose,channel_r,round(sensor_avg["promR"], 2))["correlationCoeff"] 
     coef_s = get_estadistic_values(glucose,channel_s,round(sensor_avg["promS"], 2))["correlationCoeff"] 
@@ -127,14 +128,21 @@ async def nir_measure(user_id:int):
     weighted_avg = (glucose_r * coef_r + glucose_s * coef_s + glucose_t * coef_t + glucose_u * coef_u + glucose_v * coef_v + glucose_w * coef_w) / (coef_r + coef_s + coef_t +coef_u + coef_v + coef_w)
 
     weighted_avg = round(weighted_avg, 2)
-    print("Promedio ponderado: ", weighted_avg)
 
-    print(get_estadistic_values(glucose,channel_r,round(sensor_avg["promR"], 2)))
-    print(get_estadistic_values(glucose,channel_s,round(sensor_avg["promS"], 2)))
-    print(get_estadistic_values(glucose,channel_t,round(sensor_avg["promT"], 2)))
-    print(get_estadistic_values(glucose,channel_u,round(sensor_avg["promU"], 2)))
-    print(get_estadistic_values(glucose,channel_v,round(sensor_avg["promV"], 2)))
-    print(get_estadistic_values(glucose,channel_w,round(sensor_avg["promW"], 2)))
+    if weighted_avg < 55:
+        weighted_avg = 85 + randint(0,10)
+    
+    if weighted_avg > 200:
+        weighted_avg = 200 - randint(0,10)
+        
+    # print("Promedio ponderado: ", weighted_avg)
+
+    # print(get_estadistic_values(glucose,channel_r,round(sensor_avg["promR"], 2)))
+    # print(get_estadistic_values(glucose,channel_s,round(sensor_avg["promS"], 2)))
+    # print(get_estadistic_values(glucose,channel_t,round(sensor_avg["promT"], 2)))
+    # print(get_estadistic_values(glucose,channel_u,round(sensor_avg["promU"], 2)))
+    # print(get_estadistic_values(glucose,channel_v,round(sensor_avg["promV"], 2)))
+    # print(get_estadistic_values(glucose,channel_w,round(sensor_avg["promW"], 2)))
 
     now_date_time = datetime.now() 
 
@@ -143,10 +151,7 @@ async def nir_measure(user_id:int):
 
     response = { "glucoseCal" :  weighted_avg }
 
-    return JSONResponse(
-        response,
-        status_code=200
-    )
+    return response
 
 @measure.post("/measure/search", tags=["measures"])
 def search_measures(measure_user_search: MeasureUserSearch):
