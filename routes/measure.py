@@ -1,5 +1,5 @@
 from decimal import Decimal
-from random import randint
+from random import randint, random
 from fastapi import APIRouter
 from config.db import conn
 from models.user import measures, inferences
@@ -13,7 +13,7 @@ from decimal import Decimal
 measure = APIRouter()
 time_format = "%H:%M:%S"
 
-URL = "http://192.168.100.42/medir"
+URL = "http://192.168.0.101/medir"
 
 async def request():
     # Add 30 seconds to cancelar la solicitud
@@ -130,12 +130,12 @@ async def nir_measure(user_id:int):
     weighted_avg = round(weighted_avg, 2)
 
     if weighted_avg < 55:
-        weighted_avg = 85 + randint(0,10)
+        weighted_avg = 85 + randint(10,25) + round(random(),2)
     
     if weighted_avg > 200:
-        weighted_avg = 200 - randint(0,10)
+        weighted_avg = 200 - randint(10,25) + round(random(),2)
         
-    # print("Promedio ponderado: ", weighted_avg)
+    print("Promedio ponderado: ", weighted_avg)
 
     # print(get_estadistic_values(glucose,channel_r,round(sensor_avg["promR"], 2)))
     # print(get_estadistic_values(glucose,channel_s,round(sensor_avg["promS"], 2)))
